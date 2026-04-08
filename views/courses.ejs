@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Catalog | StudentHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0b0e14;    
+            --sidebar-bg: #111827;   
+            --accent-purple: #8b5cf6; 
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            position: fixed;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+            border-right: 1px solid rgba(255,255,255,0.05);
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 1.25rem;
+            background: linear-gradient(to right, #60a5fa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            padding: 12px 15px;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: 0.3s;
+            margin-bottom: 5px;
+        }
+
+        .nav-menu a.active {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent-purple);
+            border-left: 3px solid var(--accent-purple);
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- Content --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .course-card {
+            background: #111827;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-purple);
+        }
+
+        .btn-signout {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="top-section">
+        <div class="sidebar-brand"><h2>StudentHub</h2></div>
+        <nav class="nav-menu">
+            <a href="/student-dashboard">🏠 Dashboard</a>
+            <a href="/courses" class="active">📚 Courses</a>
+            <a href="/student-profile">👤 Profile</a>
+        </nav>
+    </div>
+
+    <div class="sidebar-footer">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 0 10px;">
+            <div style="width: 35px; height: 35px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                <%= user.charAt(0).toUpperCase() %>
+            </div>
+            <div>
+                <div style="font-size: 0.85rem; font-weight: 600;"><%= user %></div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Student</div>
+            </div>
+        </div>
+        <a href="/logout" class="btn-signout">🚪 Sign Out</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1 style="margin:0;">Course <span>Catalog</span></h1>
+        <p style="color: var(--text-muted);">Available courses for your current curriculum.</p>
+    </div>
+
+    <div class="courses-grid">
+        <% if (courses.length > 0) { %>
+            <% courses.forEach(course => { %>
+                <div class="course-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <div style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 0.75rem;">
+                            <%= course.course %> </div>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">Room: <%= course.room %></span>
+                    </div>
+
+                    <h3 style="margin: 0 0 10px 0; font-size: 1.1rem;"><%= course.subject_name %></h3>
+                    
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+                        <p style="margin: 5px 0;">📅 Day: <%= course.day_of_week %></p>
+                        <p style="margin: 5px 0;">⏰ Time: <%= course.start_time %> - <%= course.end_time %></p>
+                    </div>
+
+                    <button 
+                        onclick="enrollCourse('<%= course.id %>')"
+                        style="width: 100%; padding: 10px; background: var(--accent-purple); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                        Enroll Course
+                    </button>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px; background: #111827; border-radius: 20px;">
+                <p style="color: var(--text-muted);">No courses found in the database.</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    async function enrollCourse(courseId) {
+        // Ask for confirmation first
+        if (!confirm('Are you sure you want to enroll in this course?')) return;
+
+        try {
+            const response = await fetch('/api/enroll', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ courseId: courseId })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Success! You are now enrolled.');
+                // Redirect to dashboard so the student can see their new schedule
+                window.location.href = '/student-dashboard';
+            } else {
+                alert('Enrollment failed: ' + (result.message || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Enrollment Error:', error);
+            alert('Something went wrong. Please check your connection.');
+        }
+    }
+</script>
+
+</body>
+</html>

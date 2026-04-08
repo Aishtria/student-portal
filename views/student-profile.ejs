@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile | StudentHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0b0e14;    
+            --sidebar-bg: #111827;   
+            --accent-purple: #8b5cf6; 
+            --accent-pink: #ec4899;   
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --card-bg: #1e293b80; 
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            position: fixed;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+            border-right: 1px solid rgba(255,255,255,0.05);
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 1.25rem;
+            background: linear-gradient(to right, #60a5fa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            padding: 12px 15px;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: 0.3s;
+            margin-bottom: 5px;
+        }
+
+        .nav-menu a.active {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent-purple);
+            border-left: 3px solid var(--accent-purple);
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- Profile Layout --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .student-card {
+            background: #111827;
+            border-radius: 24px;
+            overflow: hidden;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 30px;
+        }
+
+        .card-banner {
+            height: 140px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        }
+
+        .avatar-large {
+            width: 110px;
+            height: 110px;
+            background: #8b5cf6;
+            border-radius: 50%;
+            margin: -55px auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            border: 6px solid #111827;
+            position: relative;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 18px;
+            height: 18px;
+            background: #10b981;
+            border: 3px solid #111827;
+            border-radius: 50%;
+        }
+
+        .badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 800;
+        }
+
+        .badge.deans { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .badge.active { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+        .info-card {
+            background: #111827;
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item p {
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .gpa-val { color: #10b981; }
+
+        .btn-signout {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="top-section">
+        <div class="sidebar-brand"><h2>StudentHub</h2></div>
+<nav class="nav-menu">
+    <a href="/student-dashboard">🏠 Dashboard</a>
+    
+    <a href="/courses">📚 Courses</a>
+    
+    <a href="/student-profile" class="active">👤 Profile</a>
+</nav>
+    </div>
+
+    <div class="sidebar-footer">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 0 10px;">
+            <div style="width: 35px; height: 35px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                <%= user.charAt(0).toUpperCase() %>
+            </div>
+            <div>
+                <div style="font-size: 0.85rem; font-weight: 600;"><%= user %></div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Student</div>
+            </div>
+        </div>
+        <a href="/logout" class="btn-signout">🚪 Sign Out</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1 style="margin:0;">Student <span>Profile</span></h1>
+        <p style="color: var(--text-muted);">View and manage your personal information.</p>
+    </div>
+
+    <div class="profile-grid">
+        <div class="student-card">
+            <div class="card-banner"></div>
+            <div class="avatar-large">
+                <%= user.charAt(0).toUpperCase() %>
+                <div class="status-dot"></div>
+            </div>
+            <h2 style="margin:0;"><%= studentData.first_name %> <%= studentData.last_name %></h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;"><%= studentData.year_level %> Year</p>
+            <div class="badge-row">
+                <span class="badge deans">DEAN'S LIST</span>
+                <span class="badge active">ACTIVE</span>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-header">
+                <h3 style="margin:0;">📋 Personal Information</h3>
+                <button style="background:none; border: 1px solid #334155; color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer;">Edit</button>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>FULL NAME</label>
+                    <p><%= studentData.first_name %> <%= studentData.last_name %></p>
+                </div>
+                <div class="info-item">
+                    <label>STUDENT ID NUMBER</label>
+                    <p><%= username %></p>
+                </div>
+                <div class="info-item">
+                    <label>COURSE / MAJOR</label>
+                    <p><%= studentData.course %></p>
+                </div>
+                <div class="info-item">
+                    <label>YEAR LEVEL</label>
+                    <p><%= studentData.year_level %></p>
+                </div>
+                <div class="info-item">
+                    <label>STATUS</label>
+                    <p>Enrolled</p>
+                </div>
+                <div class="info-item">
+                    <label>REGISTRATION DATE</label>
+                    <p>January 2026</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
