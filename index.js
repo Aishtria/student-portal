@@ -10,6 +10,7 @@ const app = express();
 // --- 1. Middleware & File Storage ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+// This line ensures the browser can find your images in /uploads/
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 
@@ -93,24 +94,20 @@ app.post('/login', (req, res) => {
         if (results.rows.length > 0) {
             const user = results.rows[0];
 
-            // 1. Security Check: Block students from using the Admin/Staff toggle
             if (role === 'admin' && user.role === 'student') {
                 return res.send('<script>alert("Access Denied: Students cannot login here."); window.location.href="/";</script>');
             }
             
-            // 2. Security Check: Block Staff from using the Student toggle
             if (role === 'student' && user.role !== 'student') {
                 return res.send('<script>alert("Access Denied: Please use the Admin/Staff toggle."); window.location.href="/";</script>');
             }
 
-            // Set Session Info
             req.session.loggedin = true;
             req.session.userId = user.id; 
             req.session.username = user.username;
             req.session.role = user.role; 
             req.session.displayName = user.first_name || (user.role === 'teacher' ? 'Instructor' : 'Admin');
 
-            // 3. THE REDIRECT LOGIC
             if (user.role === 'admin') {
                 res.redirect('/admin-dashboard');
             } else if (user.role === 'teacher') {
@@ -234,6 +231,30 @@ app.get('/student-dashboard', (req, res) => {
             });
         });
     } else { res.redirect('/'); }
+});
+
+// --- NEWLY ADDED: Student Profile Route ---
+app.get('/student-profile', (req, res) => {
+    if (req.session.loggedin && req.session.role === 'student') {
+        // We need to get both the student details AND the username from the users table
+        const query = `
+            SELECT students.*, users.username 
+            FROM students 
+            JOIN users ON students.user_id = users.id 
+            WHERE students.user_id = $1`;
+
+        pool.query(query, [req.session.userId], (err, result) => {
+            if (err || result.rows.length === 0) return res.redirect('/student-dashboard');
+            
+            res.render('student-profile', {
+                user: req.session.displayName,
+                username: result.rows[0].username, // For the "Student ID" field
+                studentData: result.rows[0]        // Changed from 'student' to 'studentData'
+            });
+        });
+    } else {
+        res.redirect('/');
+    }
 });
 
 app.get('/logout', (req, res) => {
