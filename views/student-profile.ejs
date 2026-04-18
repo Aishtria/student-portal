@@ -227,7 +227,9 @@
 <div class="main-content">
     <div class="header">
         <h1 style="margin:0;">Student <span style="color: var(--accent-purple);">Profile</span></h1>
-        <p style="color: var(--text-muted);">View and manage your personal information.</p>
+       <p style="color: var(--text-muted); font-size: 0.9rem;">
+    <%= studentData.year_level %><%= studentData.year_level == 1 ? 'st' : studentData.year_level == 2 ? 'nd' : studentData.year_level == 3 ? 'rd' : 'th' %> Year Student
+</p>
     </div>
 
     <div class="profile-grid">
