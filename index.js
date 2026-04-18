@@ -37,15 +37,6 @@ const pool = new Pool({
     }
 });
 
-// Helper for older MySQL-style query handling
-const db = {
-    query: (text, params, callback) => {
-        return pool.query(text, params, (err, res) => {
-            if (callback) callback(err, res ? res.rows : null);
-        });
-    }
-};
-
 pool.connect((err) => {
     if (err) {
         console.error('❌ Database connection error:', err.stack);
@@ -138,14 +129,14 @@ app.get('/admin-dashboard', (req, res) => {
         const sqlStudents = 'SELECT * FROM students ORDER BY last_name ASC';
         const sqlSchedules = 'SELECT * FROM class_schedules ORDER BY id DESC';
 
-        db.query(sqlAnnouncements, [], (err, ann) => {
-            db.query(sqlStudents, [], (err2, std) => {
-                db.query(sqlSchedules, [], (err3, sch) => {
+        pool.query(sqlAnnouncements, (err, ann) => {
+            pool.query(sqlStudents, (err2, std) => {
+                pool.query(sqlSchedules, (err3, sch) => {
                     res.render('admin-dashboard', { 
                         user: req.session.displayName,
-                        announcements: ann || [],
-                        students: std || [],
-                        schedules: sch || [] 
+                        announcements: ann.rows || [],
+                        students: std.rows || [],
+                        schedules: sch.rows || [] 
                     });
                 });
             });
@@ -158,7 +149,7 @@ app.post('/post-announcement', upload.array('event_images', 5), (req, res) => {
         const { title, message } = req.body;
         const filenames = req.files ? req.files.map(file => file.filename) : [];
         const sql = 'INSERT INTO announcements (title, message, image) VALUES ($1, $2, $3)';
-        db.query(sql, [title, message, JSON.stringify(filenames)], () => {
+        pool.query(sql, [title, message, JSON.stringify(filenames)], () => {
             res.send('<script>alert("Event Published!"); window.location.href="/admin-dashboard";</script>');
         });
     }
@@ -168,7 +159,7 @@ app.post('/post-schedule', (req, res) => {
     if (req.session.loggedin && req.session.role === 'admin') {
         const { course, year_level, subject_name, day_of_week, start_time, end_time, room } = req.body;
         const sql = 'INSERT INTO class_schedules (course, year_level, subject_name, day_of_week, start_time, end_time, room) VALUES ($1, $2, $3, $4, $5, $6, $7)';
-        db.query(sql, [course, year_level, subject_name, day_of_week, start_time, end_time, room], () => {
+        pool.query(sql, [course, year_level, subject_name, day_of_week, start_time, end_time, room], () => {
             res.send('<script>alert("Schedule Posted!"); window.location.href="/admin-dashboard";</script>');
         });
     }
@@ -179,14 +170,18 @@ app.post('/post-schedule', (req, res) => {
 app.get('/teacher-dashboard', (req, res) => {
     if (req.session.loggedin && req.session.role === 'teacher') {
         const studentListSql = 'SELECT id, first_name, last_name FROM students ORDER BY last_name ASC';
-        const recentGradesSql = `SELECT grades.*, students.first_name, students.last_name FROM grades JOIN students ON grades.student_id = students.id ORDER BY grades.id DESC LIMIT 10`;
+        const recentGradesSql = `
+            SELECT grades.*, students.first_name, students.last_name 
+            FROM grades 
+            JOIN students ON grades.student_id = students.id 
+            ORDER BY grades.id DESC LIMIT 10`;
 
-        db.query(studentListSql, [], (err1, students) => {
-            db.query(recentGradesSql, [], (err2, recentGrades) => {
+        pool.query(studentListSql, (err1, students) => {
+            pool.query(recentGradesSql, (err2, recentGrades) => {
                 res.render('teacher-dashboard', {
                     user: req.session.displayName,
-                    students: students || [],
-                    recentGrades: recentGrades || []
+                    students: students.rows || [],
+                    recentGrades: recentGrades.rows || []
                 });
             });
         });
@@ -197,7 +192,7 @@ app.post('/submit-grade', (req, res) => {
     if (req.session.loggedin && req.session.role === 'teacher') {
         const { student_id, subject_name, grade_value } = req.body;
         const sql = 'INSERT INTO grades (student_id, subject_name, grade_value) VALUES ($1, $2, $3)';
-        db.query(sql, [student_id, subject_name, grade_value], (err) => {
+        pool.query(sql, [student_id, subject_name, grade_value], (err) => {
             if (err) return res.status(500).send("Database Error");
             res.send('<script>alert("Grade submitted successfully!"); window.location.href="/teacher-dashboard";</script>');
         });
@@ -210,23 +205,23 @@ app.post('/submit-grade', (req, res) => {
 
 app.get('/student-dashboard', (req, res) => {
     if (req.session.loggedin && req.session.role === 'student') {
-        db.query('SELECT * FROM students WHERE user_id = $1', [req.session.userId], (err, result) => {
-            if (err || result.length === 0) return res.redirect('/logout');
+        pool.query('SELECT * FROM students WHERE user_id = $1', [req.session.userId], (err, result) => {
+            if (err || result.rows.length === 0) return res.redirect('/logout');
             
-            const student = result[0];
+            const student = result.rows[0];
             const scheduleSql = 'SELECT * FROM class_schedules WHERE course = $1 AND year_level = $2';
             const gradeSql = 'SELECT * FROM grades WHERE student_id = $1';
             const announceSql = 'SELECT * FROM announcements ORDER BY id DESC';
 
-            db.query(scheduleSql, [student.course, student.year_level], (err1, sch) => {
-                db.query(gradeSql, [student.id], (err2, grd) => {
-                    db.query(announceSql, [], (err3, ann) => {
+            pool.query(scheduleSql, [student.course, student.year_level], (err1, sch) => {
+                pool.query(gradeSql, [student.id], (err2, grd) => {
+                    pool.query(announceSql, (err3, ann) => {
                         res.render('student-dashboard', {
                             user: req.session.displayName,
                             student: student,
-                            schedules: sch || [],
-                            grades: grd || [],
-                            announcements: ann || []
+                            schedules: sch.rows || [],
+                            grades: grd.rows || [],
+                            announcements: ann.rows || []
                         });
                     });
                 });
@@ -238,11 +233,11 @@ app.get('/student-dashboard', (req, res) => {
 app.get('/student-profile', (req, res) => {
     if (req.session.loggedin && req.session.role === 'student') {
         const sql = 'SELECT * FROM students WHERE user_id = $1';
-        db.query(sql, [req.session.userId], (err, result) => {
-            if (err || result.length === 0) return res.send("Error loading profile.");
+        pool.query(sql, [req.session.userId], (err, result) => {
+            if (err || result.rows.length === 0) return res.send("Error loading profile.");
             res.render('student-profile', { 
                 user: req.session.displayName,
-                studentData: result[0], 
+                studentData: result.rows[0], 
                 username: req.session.username 
             });
         });
@@ -251,12 +246,12 @@ app.get('/student-profile', (req, res) => {
 
 app.get('/courses', (req, res) => {
     if (req.session.loggedin && req.session.role === 'student') {
-        const sql = 'SELECT * FROM class_schedules';
-        db.query(sql, [], (err, results) => {
+        const sql = 'SELECT * FROM class_schedules ORDER BY course ASC, subject_name ASC';
+        pool.query(sql, (err, results) => {
             if (err) return res.send("Error fetching courses.");
             res.render('courses', { 
                 user: req.session.displayName,
-                courses: results 
+                courses: results.rows || []
             });
         });
     } else { res.redirect('/'); }
@@ -324,7 +319,6 @@ const initDb = async () => {
     }
 };
 
-// Run the initialization
 initDb();
 
 const PORT = process.env.PORT || 10000;

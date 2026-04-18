@@ -19,23 +19,28 @@
         body {
             background-color: var(--bg-dark);
             font-family: 'Inter', sans-serif;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 0;
+            padding: 20px; /* Space for mobile edges */
             color: var(--text-main);
+            box-sizing: border-box;
         }
 
         .login-container {
             display: flex;
             background: #111827;
-            width: 850px;
-            height: 550px;
+            width: 100%;
+            max-width: 850px;
+            /* height: 550px;  REMOVED fixed height */
+            min-height: 550px;
             border-radius: 24px;
             overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.05);
+            flex-direction: row; /* Default side-by-side */
         }
 
         /* Left Side - Branding */
@@ -63,6 +68,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            background: #111827;
         }
 
         .role-selector {
@@ -135,17 +141,44 @@
 
         .footer-link { text-align: center; margin-top: 25px; font-size: 0.85rem; color: var(--text-muted); }
         .footer-link a { color: var(--accent-purple); text-decoration: none; font-weight: 600; }
+
+        /* --- RESPONSIVE MEDIA QUERY --- */
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column; /* Stack vertically */
+                max-width: 450px;
+                border-radius: 16px;
+            }
+
+            .brand-side {
+                padding: 30px 20px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            .brand-side h1 { font-size: 1.8rem; }
+            .brand-side p { font-size: 0.85rem; margin-bottom: 15px; }
+            
+            /* Hide the list icons on small mobile to save space if needed */
+            .brand-side div[style*="text-align: left"] {
+                display: none; 
+            }
+
+            .form-side {
+                padding: 30px 20px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
+<div class="login-container">
     <div class="brand-side">
-        <div style="background: var(--accent-purple); width: 80px; height: 80px; border-radius: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">🎓</div>
+        <div style="background: var(--accent-purple); width: 60px; height: 60px; border-radius: 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">🎓</div>
         <h1>Student<span>Hub</span></h1>
         <p>Your gateway to academic excellence</p>
         <div style="text-align: left; width: 100%; padding: 0 20px;">
-            <p style="font-size: 0.9rem; margin: 10px 0;">📊 Track your academic progress</p>
+            <p style="font-size: 0.9rem; margin: 10px 0;">📊 Track academic progress</p>
             <p style="font-size: 0.9rem; margin: 10px 0;">📚 Browse & enroll in courses</p>
             <p style="font-size: 0.9rem; margin: 10px 0;">⚙️ Manage records with ease</p>
         </div>
@@ -162,7 +195,7 @@
         </div>
 
         <h2 id="loginHeader" style="margin: 0 0 5px 0;">Student Login</h2>
-        <p id="loginSubtext" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 30px;">Access your dashboard and courses</p>
+        <p id="loginSubtext" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 30px;">Access your dashboard</p>
 
         <form action="/login" method="POST" id="loginForm">
             <input type="hidden" name="role" id="selectedRole" value="student">
@@ -198,27 +231,23 @@
             adminBtn.classList.add('active');
             studentBtn.classList.remove('active');
             roleInput.value = 'admin';
-            
-            // Visual Changes for Admin Area
             header.innerText = "Admin Portal";
-            subtext.innerText = "Secure administrative access only";
+            subtext.innerText = "Secure admin access only";
             userLabel.innerText = "Admin Staff ID";
             usernameInput.placeholder = "Enter Admin ID";
             submitBtn.innerText = "Sign In →";
-            submitBtn.style.background = "linear-gradient(to right, #3b82f6, #2563eb)"; // Blue for Admin
-            footerLink.style.display = "none"; // Admins usually don't "register" themselves
+            submitBtn.style.background = "linear-gradient(to right, #3b82f6, #2563eb)";
+            footerLink.style.display = "none";
         } else {
             studentBtn.classList.add('active');
             adminBtn.classList.remove('active');
             roleInput.value = 'student';
-            
-            // Visual Changes for Student Area
             header.innerText = "Student Login";
-            subtext.innerText = "Access your dashboard and courses";
+            subtext.innerText = "Access your dashboard";
             userLabel.innerText = "Username / ID Number";
             usernameInput.placeholder = "Enter your ID";
-            submitBtn.innerText = "Sign In→";
-            submitBtn.style.background = "linear-gradient(to right, #8b5cf6, #6366f1)"; // Purple for Student
+            submitBtn.innerText = "Sign In →";
+            submitBtn.style.background = "linear-gradient(to right, #8b5cf6, #6366f1)";
             footerLink.style.display = "block";
         }
     }

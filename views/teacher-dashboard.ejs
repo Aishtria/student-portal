@@ -16,6 +16,7 @@
             --card-bg: #1e293b;
             --sidebar-width: 260px;
             --input-bg: #0f172a;
+            --border: rgba(255, 255, 255, 0.05);
         }
 
         body {
@@ -24,6 +25,7 @@
             display: flex;
             background-color: var(--primary-bg);
             color: var(--text-main);
+            min-height: 100vh;
         }
 
         /* --- Sidebar --- */
@@ -33,97 +35,113 @@
             background-color: var(--sidebar-bg);
             position: fixed;
             left: 0; top: 0;
-            padding: 20px;
+            padding: 30px 20px;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid var(--border);
             box-sizing: border-box;
         }
 
         .sidebar-brand h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 800;
             background: linear-gradient(to right, var(--accent-purple), var(--accent-pink));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
+            margin: 0 0 40px 0;
+            letter-spacing: -0.5px;
         }
 
         .nav-menu a {
-            padding: 12px 15px;
+            padding: 14px 18px;
             text-decoration: none;
-            color: var(--text-main);
-            border-radius: 10px;
+            color: var(--text-muted);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 5px;
-            transition: 0.3s;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
-        .nav-menu a:hover {
+        .nav-menu a.active, .nav-menu a:hover {
             background: rgba(139, 92, 246, 0.1);
-            color: var(--accent-purple);
+            color: var(--text-main);
         }
 
         .logout-link {
             margin-top: auto;
             color: #f87171 !important;
             text-decoration: none;
-            padding: 12px 15px;
+            padding: 14px 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: background 0.3s;
+        }
+
+        .logout-link:hover {
+            background: rgba(248, 113, 113, 0.1);
         }
 
         /* --- Main Content --- */
         .main-content {
             margin-left: var(--sidebar-width);
-            padding: 40px;
+            padding: 60px 40px;
             width: calc(100% - var(--sidebar-width));
         }
 
-        .header h1 { font-size: 1.8rem; margin: 0 0 40px 0; }
+        .header h1 { font-size: 2rem; margin: 0 0 10px 0; font-weight: 700; }
+        .header p { color: var(--text-muted); margin-bottom: 40px; }
         .header h1 span { color: var(--accent-purple); }
 
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1.5fr;
             gap: 30px;
+            align-items: start;
         }
 
         .content-card {
             background: var(--card-bg);
-            border-radius: 20px;
-            padding: 30px;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
         }
 
         .card-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             margin-bottom: 25px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         /* --- Form Elements --- */
+        .form-group { margin-bottom: 20px; }
         label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 600;
             color: var(--text-muted);
             margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         select, input {
             width: 100%;
-            padding: 14px;
-            margin-bottom: 20px;
+            padding: 14px 16px;
             background: var(--input-bg);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             color: white;
             font-family: inherit;
             box-sizing: border-box;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
         }
 
         select:focus, input:focus {
@@ -135,109 +153,140 @@
             background: linear-gradient(to right, var(--accent-purple), var(--accent-pink));
             color: white;
             border: none;
-            padding: 15px;
-            border-radius: 12px;
+            padding: 16px;
+            border-radius: 14px;
             width: 100%;
             font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
         }
 
-        .btn-submit:hover { transform: translateY(-2px); }
+        .btn-submit:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.4);
+        }
 
         /* --- Table --- */
+        .table-container { overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th {
             text-align: left;
             color: var(--text-muted);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
+            letter-spacing: 1px;
             padding: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid var(--border);
         }
 
         .data-table td {
-            padding: 15px 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 18px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
             font-size: 0.95rem;
         }
 
         .grade-badge {
-            background: rgba(139, 92, 246, 0.2);
-            color: var(--accent-purple);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: 700;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.1));
+            color: #c084fc;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        @media (max-width: 1100px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <aside class="sidebar">
         <div class="sidebar-brand">
             <h2>StudentHub</h2>
         </div>
         <nav class="nav-menu">
-            <a href="/teacher-dashboard">✍️ Input Grades</a>
-            </nav>
+            <a href="/teacher-dashboard" class="active">✍️ Input Grades</a>
+            <a href="/teacher-schedules">📅 My Schedule</a>
+        </nav>
         <a href="/logout" class="logout-link">🚪 Logout</a>
-    </div>
+    </aside>
 
-    <div class="main-content">
+    <main class="main-content">
         <div class="header">
-            <h1>Welcome, <span>Coach <%= user %></span>! 🎓</h1>
+            <h1>Welcome back, <span>Coach <%= user %></span>! 🎓</h1>
+            <p>Enter and manage student academic performance records.</p>
         </div>
 
         <div class="dashboard-grid">
             <div class="content-card" style="border-top: 4px solid var(--accent-purple);">
-                <div class="card-title">📝 Enter Student Grade</div>
+                <div class="card-title">📝 Encode New Grade</div>
                 <form action="/submit-grade" method="POST">
-                    <label>Select Student:</label>
-                    <select name="student_id" required>
-                        <option value="">-- Choose Student --</option>
-                        <% students.forEach(student => { %>
-                            <option value="<%= student.id %>"><%= student.first_name %> <%= student.last_name %></option>
-                        <% }); %>
-                    </select>
+                    <div class="form-group">
+                        <label>Student Name</label>
+                        <select name="student_id" required>
+                            <option value="" disabled selected>Search Student...</option>
+                            <% if (typeof students !== 'undefined') { %>
+                                <% students.forEach(student => { %>
+                                    <option value="<%= student.id %>"><%= student.first_name %> <%= student.last_name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
 
-                    <label>Subject:</label>
-                    <input type="text" name="subject_name" placeholder="e.g. Data Structures" required>
+                    <div class="form-group">
+                        <label>Course Subject</label>
+                        <input type="text" name="subject_name" placeholder="e.g. Computer Programming 1" required>
+                    </div>
 
-                    <label>Grade (1.0 - 5.0):</label>
-                    <input type="number" step="0.25" name="grade_value" min="1.0" max="5.0" placeholder="1.25" required>
+                    <div class="form-group">
+                        <label>Numeric Grade (1.00 - 5.00)</label>
+                        <input type="number" step="0.25" name="grade_value" min="1.0" max="5.0" placeholder="1.00" required>
+                    </div>
 
-                    <button type="submit" class="btn-submit">Post Grade</button>
+                    <button type="submit" class="btn-submit">Confirm & Post Grade</button>
                 </form>
             </div>
 
             <div class="content-card" style="border-top: 4px solid var(--accent-pink);">
                 <div class="card-title">📊 Recently Encoded Grades</div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Subject</th>
-                            <th style="text-align: center;">Grade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (typeof recentGrades !== 'undefined' && recentGrades.length > 0) { %>
-                            <% recentGrades.forEach(item => { %>
-                                <tr>
-                                    <td><strong><%= item.first_name %> <%= item.last_name %></strong></td>
-                                    <td style="color: var(--text-muted);"><%= item.subject_name %></td>
-                                    <td style="text-align: center;"><span class="grade-badge"><%= item.grade_value %></span></td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
                             <tr>
-                                <td colspan="3" style="text-align:center; color: var(--text-muted); padding: 40px;">No grades encoded recently.</td>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th style="text-align: center;">Grade</th>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <% if (typeof recentGrades !== 'undefined' && recentGrades.length > 0) { %>
+                                <% recentGrades.forEach(item => { %>
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 700;"><%= item.first_name %> <%= item.last_name %></div>
+                                            <small style="color: var(--text-muted);">Student ID: #<%= item.id %></small>
+                                        </td>
+                                        <td style="color: var(--text-muted);"><%= item.subject_name %></td>
+                                        <td style="text-align: center;"><span class="grade-badge"><%= item.grade_value %></span></td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" style="text-align:center; color: var(--text-muted); padding: 60px 0;">
+                                        <div style="font-size: 2rem; margin-bottom: 10px;">📂</div>
+                                        No grades encoded in this session.
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+
 </body>
 </html>

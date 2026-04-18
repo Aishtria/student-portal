@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudentHub | Admin Panel</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -20,6 +19,7 @@
             --border: rgba(255, 255, 255, 0.1);
             --danger: #ef4444;
             --success: #22c55e;
+            --sidebar-width: 260px;
             --primary-gradient: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
         }
 
@@ -32,12 +32,26 @@
             color: var(--text-main);
             display: flex;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        /* Sidebar Navigation */
+        /* --- Mobile Toggle --- */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: var(--accent-purple);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* --- Sidebar Navigation --- */
         .sidebar {
-            width: 260px;
+            width: var(--sidebar-width);
             background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
             display: flex;
@@ -45,7 +59,8 @@
             padding: 24px;
             position: fixed;
             height: 100vh;
-            z-index: 100;
+            z-index: 1000;
+            transition: transform 0.3s ease;
         }
 
         .brand {
@@ -57,12 +72,9 @@
 
         .brand-icon {
             background: var(--primary-gradient);
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem;
         }
 
@@ -75,9 +87,7 @@
         }
 
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: flex; align-items: center; gap: 12px;
             padding: 12px 15px;
             color: var(--text-muted);
             text-decoration: none;
@@ -95,25 +105,22 @@
 
         .nav-item.active {
             border-left: 4px solid var(--accent-purple);
-            background: linear-gradient(to right, rgba(139, 92, 246, 0.1), transparent);
         }
 
-        /* Main Content */
+        /* --- Main Content --- */
         .main-content {
             flex: 1;
-            margin-left: 260px;
+            margin-left: var(--sidebar-width);
             padding: 40px;
-            max-width: 1400px;
+            transition: margin-left 0.3s ease;
         }
 
         .content-section {
             display: none;
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.4s ease-out;
         }
 
-        .content-section.active {
-            display: block;
-        }
+        .content-section.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -125,30 +132,27 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 40px;
+            gap: 20px;
         }
 
         .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: flex; align-items: center; gap: 12px;
             background: var(--card-bg);
             padding: 6px 16px 6px 6px;
             border-radius: 50px;
             border: 1px solid var(--border);
+            white-space: nowrap;
         }
 
         .avatar {
-            width: 34px;
-            height: 34px;
+            width: 34px; height: 34px;
             background: var(--accent-purple);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white;
         }
 
+        /* --- Cards & Forms --- */
         .card {
             background: var(--card-bg);
             padding: 28px;
@@ -157,13 +161,7 @@
             margin-bottom: 32px;
         }
 
-        .card-title {
-            margin: 0 0 20px 0;
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .card-title { margin: 0 0 20px 0; font-size: 1.25rem; display: flex; align-items: center; gap: 10px; }
 
         input, textarea, select {
             width: 100%;
@@ -176,6 +174,8 @@
             outline: none;
         }
 
+        input:focus { border-color: var(--accent-purple); }
+
         .btn {
             padding: 12px 24px;
             border-radius: 12px;
@@ -183,40 +183,56 @@
             cursor: pointer;
             border: none;
             transition: 0.3s;
-            display: inline-flex;
-            align-items: center;
+            display: inline-flex; align-items: center;
             text-decoration: none;
         }
 
         .btn-primary { background: var(--primary-gradient); color: white; width: 100%; justify-content: center; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: white; }
 
+        /* --- Tables --- */
         .table-responsive {
             background: var(--card-bg);
             border-radius: 20px;
             border: 1px solid var(--border);
-            overflow: hidden;
+            overflow-x: auto;
             margin-bottom: 40px;
         }
 
-        table { width: 100%; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th { background: rgba(255,255,255,0.02); color: var(--text-muted); text-align: left; padding: 16px; font-size: 0.75rem; text-transform: uppercase; }
         td { padding: 16px; border-top: 1px solid var(--border); vertical-align: middle; }
 
-        .thumbnail { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+        .thumbnail { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
         .badge { background: rgba(139, 92, 246, 0.15); color: #a78bfa; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
 
         .schedule-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
+        }
+
+        /* --- Responsive Queries --- */
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 80px 20px 20px; }
+            .mobile-toggle { display: block; }
+        }
+
+        @media (max-width: 640px) {
+            .header-bar { flex-direction: column; align-items: flex-start; }
+            .user-profile { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+
+    <aside class="sidebar" id="sidebar">
         <div class="brand">
             <div class="brand-icon">🛡️</div>
             <div>
@@ -249,51 +265,48 @@
         </header>
 
         <div id="section-dashboard" class="content-section active">
-            <section class="card">
-                <h2 class="card-title">📢 Post New Event</h2>
-                <form action="/post-announcement" method="POST" enctype="multipart/form-data">
-                    <input type="text" name="title" placeholder="Event Title" required>
-                    <textarea name="message" rows="3" placeholder="Event Description..." required></textarea>
-                    <input type="file" name="event_images" accept="image/*" multiple>
-                    <button type="submit" class="btn btn-primary">Publish Event →</button>
-                </form>
-            </section>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <section class="card">
+                    <h2 class="card-title">📢 Post New Event</h2>
+                    <form action="/post-announcement" method="POST" enctype="multipart/form-data">
+                        <input type="text" name="title" placeholder="Event Title" required>
+                        <textarea name="message" rows="3" placeholder="Event Description..." required></textarea>
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">Attach Images</label>
+                        <input type="file" name="event_images" accept="image/*" multiple>
+                        <button type="submit" class="btn btn-primary">Publish Event →</button>
+                    </form>
+                </section>
 
-            <section class="card">
-                <h2 class="card-title">📅 Quick Schedule Entry</h2>
-                <form action="/post-schedule" method="POST">
-                    <div class="schedule-grid">
-                        <select name="course" required>
-                            <option value="" disabled selected>Select Course</option>
-                            <option value="BS Computer Science">BS Computer Science</option>
-                            <option value="BS Information Systems">BS Information Systems</option>
-                            <option value="BS Criminology">BS Criminology</option>
-                        </select>
-                        <select name="year_level" required>
-                            <option value="1">1st Year</option>
-                            <option value="2">2nd Year</option>
-                            <option value="3">3rd Year</option>
-                            <option value="4">4th Year</option>
-                        </select>
+                <section class="card">
+                    <h2 class="card-title">📅 Quick Schedule</h2>
+                    <form action="/post-schedule" method="POST">
                         <input type="text" name="subject_name" placeholder="Subject Name" required>
-                        <select name="day_of_week" required>
-                            <option value="Monday">Monday</option>
-                            <option value="Tuesday">Tuesday</option>
-                            <option value="Wednesday">Wednesday</option>
-                            <option value="Thursday">Thursday</option>
-                            <option value="Friday">Friday</option>
-                        </select>
-                        <input type="time" name="start_time" required>
-                        <input type="time" name="end_time" required>
+                        <div class="schedule-grid">
+                            <select name="course" required>
+                                <option value="" disabled selected>Course</option>
+                                <option value="BSCS">BSCS</option>
+                                <option value="BSIS">BSIS</option>
+                            </select>
+                            <select name="day_of_week" required>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                            </select>
+                        </div>
+                        <div class="schedule-grid" style="margin-top: 10px;">
+                            <input type="time" name="start_time" required>
+                            <input type="time" name="end_time" required>
+                        </div>
                         <input type="text" name="room" placeholder="Room (e.g., Lab 101)" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Save Schedule</button>
-                </form>
-            </section>
+                        <button type="submit" class="btn btn-primary">Save Schedule</button>
+                    </form>
+                </section>
+            </div>
         </div>
 
         <div id="section-students" class="content-section">
-            <h2 class="card-title">👥 Registered Students</h2>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -310,7 +323,7 @@
                                 </tr>
                             <% }); %>
                         <% } else { %>
-                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No student data available.</td></tr>
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 40px;">No registered students found.</td></tr>
                         <% } %>
                     </tbody>
                 </table>
@@ -318,11 +331,10 @@
         </div>
 
         <div id="section-announcements" class="content-section">
-            <h2 class="card-title">📢 Manage Postings</h2>
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Images</th><th>Title</th><th>Date</th><th>Actions</th></tr>
+                        <tr><th>Image</th><th>Title</th><th>Date</th><th>Actions</th></tr>
                     </thead>
                     <tbody>
                         <% if(announcements && announcements.length > 0) { %>
@@ -330,16 +342,17 @@
                                 <tr>
                                     <td>
                                         <% if(post.image) { 
-                                            try {
-                                                let imgs = JSON.parse(post.image); %>
-                                                <img src="/uploads/<%= Array.isArray(imgs) ? imgs[0] : imgs %>" class="thumbnail">
-                                            <% } catch(e) { %>
-                                                <img src="/uploads/<%= post.image %>" class="thumbnail">
-                                            <% }
-                                        } %>
+                                            let imgUrl = post.image;
+                                            try { 
+                                                let imgs = JSON.parse(post.image); 
+                                                imgUrl = Array.isArray(imgs) ? imgs[0] : imgs;
+                                            } catch(e) {}
+                                        %>
+                                            <img src="/uploads/<%= imgUrl %>" class="thumbnail" onerror="this.src='https://via.placeholder.com/45'">
+                                        <% } %>
                                     </td>
                                     <td><strong><%= post.title %></strong></td>
-                                    <td style="color: var(--text-muted);"><%= new Date(post.created_at).toLocaleDateString() %></td>
+                                    <td><%= new Date(post.created_at).toLocaleDateString() %></td>
                                     <td>
                                         <a href="/delete-post/<%= post.id %>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this post?')">Delete</a>
                                     </td>
@@ -352,23 +365,20 @@
         </div>
 
         <div id="section-schedules" class="content-section">
-            <h2 class="card-title">📅 Managed Schedules</h2>
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Subject</th><th>Course & Year</th><th>Day & Time</th><th>Room</th><th>Actions</th></tr>
+                        <tr><th>Subject</th><th>Course</th><th>Day & Time</th><th>Room</th><th>Actions</th></tr>
                     </thead>
                     <tbody>
                         <% if(schedules && schedules.length > 0) { %>
                             <% schedules.forEach(s => { %>
                                 <tr>
                                     <td><strong><%= s.subject_name %></strong></td>
-                                    <td><%= s.course %> - Y<%= s.year_level %></td>
-                                    <td><%= s.day_of_week %> <br> <small><%= s.start_time %> - <%= s.end_time %></small></td>
+                                    <td><%= s.course %> (Y<%= s.year_level %>)</td>
+                                    <td><%= s.day_of_week %><br><small><%= s.start_time %> - <%= s.end_time %></small></td>
                                     <td><span class="badge"><%= s.room %></span></td>
-                                    <td>
-                                        <a href="/delete-schedule/<%= s.id %>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this schedule?')">Delete</a>
-                                    </td>
+                                    <td><a href="/delete-schedule/<%= s.id %>" class="btn btn-sm btn-danger">Delete</a></td>
                                 </tr>
                             <% }); %>
                         <% } %>
@@ -376,11 +386,17 @@
                 </table>
             </div>
         </div>
-
     </main>
 
     <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
         function showSection(sectionId) {
+            // Close mobile sidebar if open
+            document.getElementById('sidebar').classList.remove('active');
+
             // Hide all
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
