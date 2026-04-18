@@ -262,11 +262,16 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// --- 7. UTILITY: ADMIN SETUP (RUN ONCE THEN DELETE) ---
+// --- 7. UTILITY: SUPER RESET ADMIN SETUP (RUN ONCE THEN DELETE) ---
 app.get('/setup-admin', async (req, res) => {
     try {
+        // Clear any old admin account first to ensure the new password takes effect
+        await pool.query("DELETE FROM users WHERE username = $1", ['admin']);
+        
+        // Insert fresh admin account
         await pool.query("INSERT INTO users (username, password, role) VALUES ($1, $2, $3)", ['admin', 'chcci2026', 'admin']);
-        res.send("✅ Admin account created! Username: admin, Password: chcci2026");
+        
+        res.send("✅ SUCCESS! Admin account has been RESET. <br>Username: admin <br>Password: chcci2026 <br><br><a href='/'>Go to Login</a>");
     } catch (err) {
         res.send("❌ Error: " + err.message);
     }
