@@ -262,7 +262,17 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// --- 7. AUTO-TABLE CREATION SCRIPT ---
+// --- 7. UTILITY: ADMIN SETUP (RUN ONCE THEN DELETE) ---
+app.get('/setup-admin', async (req, res) => {
+    try {
+        await pool.query("INSERT INTO users (username, password, role) VALUES ($1, $2, $3)", ['admin', 'chcci2026', 'admin']);
+        res.send("✅ Admin account created! Username: admin, Password: chcci2026");
+    } catch (err) {
+        res.send("❌ Error: " + err.message);
+    }
+});
+
+// --- 8. AUTO-TABLE CREATION SCRIPT ---
 const initDb = async () => {
     const queryText = `
     CREATE TABLE IF NOT EXISTS users (
