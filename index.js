@@ -41,7 +41,7 @@ db.connect(err => {
         console.error('❌ Database error: ' + err.message);
         return;
     }
-    console.log('✅ Final Project Database Connected!');
+    console.log('✅ Student Portal Database Connected!');
 });
 
 // --- 3. Authentication Routes ---
@@ -72,13 +72,14 @@ app.post('/register', (req, res) => {
                 res.send('<script>alert("Student Registration successful!"); window.location.href="/";</script>');
             });
         } else {
-            res.send('<script>alert("Teacher Registration successful!"); window.location.href="/";</script>');
+            res.send('<script>alert("Staff Registration successful!"); window.location.href="/";</script>');
         }
     });
 });
 
 app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body; 
+
     const query = `
         SELECT users.*, students.first_name 
         FROM users 
@@ -90,8 +91,13 @@ app.post('/login', (req, res) => {
 
         if (results.length > 0) {
             const user = results[0];
-            if (!user.role || user.role.trim() === "") {
-                return res.send('<script>alert("Role not assigned. Please contact Admin."); window.location.href="/";</script>');
+
+            if (role === 'student' && user.role !== 'student') {
+                return res.send('<script>alert("Access Denied: Use the Admin/Staff toggle."); window.location.href="/";</script>');
+            } 
+            
+            if (role === 'admin' && (user.role !== 'admin' && user.role !== 'teacher')) {
+                return res.send('<script>alert("Access Denied: Students cannot login here."); window.location.href="/";</script>');
             }
 
             req.session.loggedin = true;
@@ -121,80 +127,39 @@ app.get('/admin-dashboard', (req, res) => {
         const sqlStudents = 'SELECT * FROM students ORDER BY last_name ASC';
         const sqlSchedules = 'SELECT * FROM class_schedules ORDER BY id DESC';
 
-        db.query(sqlAnnouncements, (err, announcementRows) => {
-            if (err) return res.send("Error loading announcements.");
-
-            db.query(sqlStudents, (err2, studentRows) => {
-                if (err2) return res.send("Error loading students.");
-
-                db.query(sqlSchedules, (err3, scheduleRows) => {
-                    if (err3) return res.send("Error loading schedules.");
-
+        db.query(sqlAnnouncements, (err, ann) => {
+            db.query(sqlStudents, (err2, std) => {
+                db.query(sqlSchedules, (err3, sch) => {
                     res.render('admin-dashboard', { 
                         user: req.session.displayName,
-                        announcements: announcementRows || [],
-                        students: studentRows || [],
-                        schedules: scheduleRows || [] 
+                        announcements: ann || [],
+                        students: std || [],
+                        schedules: sch || [] 
                     });
                 });
             });
         });
-    } else {
-        res.redirect('/');
-    }
+    } else { res.redirect('/'); }
 });
 
 app.post('/post-announcement', upload.array('event_images', 5), (req, res) => {
     if (req.session.loggedin && req.session.role === 'admin') {
         const { title, message } = req.body;
         const filenames = req.files ? req.files.map(file => file.filename) : [];
-        const imagesData = filenames.length > 0 ? JSON.stringify(filenames) : null;
-
         const sql = 'INSERT INTO announcements (title, message, image) VALUES (?, ?, ?)';
-        db.query(sql, [title, message, imagesData], (err) => {
-            if (err) return res.send("Error saving to database.");
+        db.query(sql, [title, message, JSON.stringify(filenames)], () => {
             res.send('<script>alert("Event Published!"); window.location.href="/admin-dashboard";</script>');
         });
-    } else {
-        res.status(403).send("Unauthorized");
     }
 });
 
 app.post('/post-schedule', (req, res) => {
     if (req.session.loggedin && req.session.role === 'admin') {
         const { course, year_level, subject_name, day_of_week, start_time, end_time, room } = req.body;
-        
-        const sql = `INSERT INTO class_schedules 
-                     (course, year_level, subject_name, day_of_week, start_time, end_time, room) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?)`;
-        
-        db.query(sql, [course, year_level, subject_name, day_of_week, start_time, end_time, room], (err) => {
-            if (err) {
-                console.error("❌ SQL Error:", err);
-                return res.send("Error saving schedule.");
-            }
-            res.send('<script>alert("Schedule Posted Successfully!"); window.location.href="/admin-dashboard";</script>');
+        const sql = 'INSERT INTO class_schedules (course, year_level, subject_name, day_of_week, start_time, end_time, room) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        db.query(sql, [course, year_level, subject_name, day_of_week, start_time, end_time, room], () => {
+            res.send('<script>alert("Schedule Posted!"); window.location.href="/admin-dashboard";</script>');
         });
-    } else {
-        res.status(403).send("Unauthorized");
-    }
-});
-
-app.get('/delete-post/:id', (req, res) => {
-    if (req.session.loggedin && req.session.role === 'admin') {
-        db.query('DELETE FROM announcements WHERE id = ?', [req.params.id], () => res.redirect('/admin-dashboard'));
-    }
-});
-
-// Added Delete Schedule Route
-app.get('/delete-schedule/:id', (req, res) => {
-    if (req.session.loggedin && req.session.role === 'admin') {
-        db.query('DELETE FROM class_schedules WHERE id = ?', [req.params.id], (err) => {
-            if (err) console.error(err);
-            res.redirect('/admin-dashboard');
-        });
-    } else {
-        res.redirect('/');
     }
 });
 
@@ -202,16 +167,8 @@ app.get('/delete-schedule/:id', (req, res) => {
 
 app.get('/teacher-dashboard', (req, res) => {
     if (req.session.loggedin && req.session.role === 'teacher') {
-        
-        // Query 1: Get all students for the dropdown
         const studentListSql = 'SELECT id, first_name, last_name FROM students ORDER BY last_name ASC';
-        
-        // Query 2: Get recent grades joined with student names for the table
-        const recentGradesSql = `
-            SELECT grades.*, students.first_name, students.last_name 
-            FROM grades 
-            JOIN students ON grades.student_id = students.id 
-            ORDER BY grades.id DESC LIMIT 10`;
+        const recentGradesSql = `SELECT grades.*, students.first_name, students.last_name FROM grades JOIN students ON grades.student_id = students.id ORDER BY grades.id DESC LIMIT 10`;
 
         db.query(studentListSql, (err1, students) => {
             db.query(recentGradesSql, (err2, recentGrades) => {
@@ -222,9 +179,7 @@ app.get('/teacher-dashboard', (req, res) => {
                 });
             });
         });
-    } else {
-        res.redirect('/');
-    }
+    } else { res.redirect('/'); }
 });
 
 app.post('/submit-grade', (req, res) => {
@@ -232,96 +187,70 @@ app.post('/submit-grade', (req, res) => {
         const { student_id, subject_name, grade_value } = req.body;
         const sql = 'INSERT INTO grades (student_id, subject_name, grade_value) VALUES (?, ?, ?)';
         db.query(sql, [student_id, subject_name, grade_value], (err) => {
-            if (err) return res.send("Error saving grade.");
+            if (err) return res.status(500).send("Database Error");
             res.send('<script>alert("Grade submitted successfully!"); window.location.href="/teacher-dashboard";</script>');
         });
     } else {
-        res.status(403).send("Unauthorized");
+        res.status(403).send("Unauthorized Access");
     }
 });
 
-// --- 6. Student Dashboard, Profile & Courses ---
+// --- 6. Student Dashboard & Profile ---
+
 app.get('/student-dashboard', (req, res) => {
     if (req.session.loggedin && req.session.role === 'student') {
-        const userId = req.session.userId;
-
-        // Step 1: Get student info (course/year)
-        db.query('SELECT * FROM students WHERE user_id = ?', [userId], (err, studentResults) => {
-            if (err || studentResults.length === 0) {
-                console.log("❌ Profile Missing for User ID:", userId);
-                // Fallback: Show announcements even if profile is missing
-                return db.query('SELECT * FROM announcements ORDER BY id DESC', (err, ann) => {
-                    res.render('student-dashboard', { 
-                        user: req.session.displayName, 
-                        schedules: [], 
-                        announcements: ann || [], 
-                        grades: [] 
-                    });
-                });
-            }
-
-            const student = studentResults[0];
-            const course = student.course; // This is "BSCS"
-            const year = student.year_level; // This is "2"
-
-            // Step 2: Fetch all related data
+        db.query('SELECT * FROM students WHERE user_id = ?', [req.session.userId], (err, result) => {
+            if (err || result.length === 0) return res.redirect('/logout');
+            
+            const student = result[0]; // This contains course, year_level, etc.
             const scheduleSql = 'SELECT * FROM class_schedules WHERE course = ? AND year_level = ?';
             const gradeSql = 'SELECT * FROM grades WHERE student_id = ?';
             const announceSql = 'SELECT * FROM announcements ORDER BY id DESC';
 
-            db.query(scheduleSql, [course, year], (err1, schedules) => {
-                db.query(gradeSql, [student.id], (err2, grades) => {
-                    db.query(announceSql, (err3, announcements) => {
+            db.query(scheduleSql, [student.course, student.year_level], (err1, sch) => {
+                db.query(gradeSql, [student.id], (err2, grd) => {
+                    db.query(announceSql, (err3, ann) => {
                         res.render('student-dashboard', {
                             user: req.session.displayName,
-                            schedules: schedules || [],
-                            grades: grades || [],
-                            announcements: announcements || []
+                            student: student, // <--- PASS THE STUDENT OBJECT HERE
+                            schedules: sch || [],
+                            grades: grd || [],
+                            announcements: ann || []
                         });
                     });
                 });
             });
         });
-    } else {
-        res.redirect('/');
-    }
+    } else { res.redirect('/'); }
 });
 
+// FIXED: Added student-profile route
 app.get('/student-profile', (req, res) => {
     if (req.session.loggedin && req.session.role === 'student') {
         const sql = 'SELECT * FROM students WHERE user_id = ?';
         db.query(sql, [req.session.userId], (err, result) => {
             if (err || result.length === 0) return res.send("Error loading profile.");
-            
             res.render('student-profile', { 
                 user: req.session.displayName,
                 studentData: result[0], 
                 username: req.session.username 
             });
         });
-    } else {
-        res.redirect('/');
-    }
+    } else { res.redirect('/'); }
 });
 
+// FIXED: Added courses route for students
 app.get('/courses', (req, res) => {
     if (req.session.loggedin && req.session.role === 'student') {
-        const sql = 'SELECT * FROM class_schedules'; 
-        
+        const sql = 'SELECT * FROM class_schedules';
         db.query(sql, (err, results) => {
-            if (err) {
-                console.error(err);
-                return res.send("Error fetching courses.");
-            }
-            
+            if (err) return res.send("Error fetching courses.");
             res.render('courses', { 
                 user: req.session.displayName,
                 courses: results 
             });
         });
-    } else {
-        res.redirect('/');
-    }
+    } else { res.redirect('/'); }
 });
 
 app.get('/logout', (req, res) => {

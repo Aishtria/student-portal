@@ -258,20 +258,33 @@
     <div class="stat-grid">
         <div class="stat-card">
             <h3>Current GPA</h3>
-            <div class="value">1.25</div>
+            <div class="value">
+                <% 
+                   if (grades.length > 0) { 
+                      let sum = 0;
+                      grades.forEach(g => sum += parseFloat(g.grade_value));
+                      %><%= (sum / grades.length).toFixed(2) %><%
+                   } else { 
+                      %>N/A<% 
+                   } 
+                %>
+            </div>
         </div>
+
         <div class="stat-card" style="--accent-purple: var(--accent-pink)">
             <h3>Status</h3>
-            <div class="value">Enrolled</div>
-        </div>
+            <div class="value">Enrolled</div> </div>
+
         <div class="stat-card">
-            <h3>College</h3>
-            <div class="value">Computer Science</div>
-        </div>
+            <h3>Course / College</h3>
+            <div class="value"><%= student.course %></div> </div>
+
         <div class="stat-card" style="--accent-purple: #10b981">
             <h3>Year Level</h3>
-            <div class="value">3rd Year</div>
-        </div>
+            <div class="value">
+                <%= student.year_level %>
+                <%= student.year_level == 1 ? 'st' : student.year_level == 2 ? 'nd' : student.year_level == 3 ? 'rd' : 'th' %> Year
+            </div> </div>
     </div>
 
     <h2 class="section-title" id="schedule-section">📅 Class Schedule</h2>

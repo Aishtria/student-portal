@@ -86,9 +86,12 @@
         .course-card {
             background: #111827;
             border-radius: 20px;
-            padding: 20px;
+            padding: 24px;
             border: 1px solid rgba(255,255,255,0.05);
             transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .course-card:hover {
@@ -124,7 +127,7 @@
 
     <div class="sidebar-footer">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 0 10px;">
-            <div style="width: 35px; height: 35px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+            <div style="width: 35px; height: 35px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
                 <%= user.charAt(0).toUpperCase() %>
             </div>
             <div>
@@ -138,71 +141,42 @@
 
 <div class="main-content">
     <div class="header">
-        <h1 style="margin:0;">Course <span>Catalog</span></h1>
-        <p style="color: var(--text-muted);">Available courses for your current curriculum.</p>
+        <h1 style="margin:0;">Course <span style="color: var(--accent-purple);">Catalog</span></h1>
+        <p style="color: var(--text-muted);">View all available course offerings and schedules.</p>
     </div>
 
     <div class="courses-grid">
         <% if (courses.length > 0) { %>
             <% courses.forEach(course => { %>
                 <div class="course-card">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                        <div style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 0.75rem;">
-                            <%= course.course %> </div>
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">Room: <%= course.room %></span>
-                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <div style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 0.75rem;">
+                                <%= course.course %> 
+                            </div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Room: <%= course.room %></span>
+                        </div>
 
-                    <h3 style="margin: 0 0 10px 0; font-size: 1.1rem;"><%= course.subject_name %></h3>
-                    
-                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
-                        <p style="margin: 5px 0;">📅 Day: <%= course.day_of_week %></p>
-                        <p style="margin: 5px 0;">⏰ Time: <%= course.start_time %> - <%= course.end_time %></p>
+                        <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: white;"><%= course.subject_name %></h3>
+                        
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">
+                            <p style="margin: 8px 0; display: flex; align-items: center; gap: 8px;">
+                                <span>📅</span> Day: <%= course.day_of_week %>
+                            </p>
+                            <p style="margin: 8px 0; display: flex; align-items: center; gap: 8px;">
+                                <span>⏰</span> Time: <%= course.start_time %> - <%= course.end_time %>
+                            </p>
+                        </div>
                     </div>
-
-                    <button 
-                        onclick="enrollCourse('<%= course.id %>')"
-                        style="width: 100%; padding: 10px; background: var(--accent-purple); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
-                        Enroll Course
-                    </button>
                 </div>
             <% }); %>
         <% } else { %>
             <div style="grid-column: 1/-1; text-align: center; padding: 50px; background: #111827; border-radius: 20px;">
-                <p style="color: var(--text-muted);">No courses found in the database.</p>
+                <p style="color: var(--text-muted);">No courses currently available in the catalog.</p>
             </div>
         <% } %>
     </div>
 </div>
-
-<script>
-    async function enrollCourse(courseId) {
-        // Ask for confirmation first
-        if (!confirm('Are you sure you want to enroll in this course?')) return;
-
-        try {
-            const response = await fetch('/api/enroll', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ courseId: courseId })
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                alert('Success! You are now enrolled.');
-                // Redirect to dashboard so the student can see their new schedule
-                window.location.href = '/student-dashboard';
-            } else {
-                alert('Enrollment failed: ' + (result.message || 'Unknown error'));
-            }
-        } catch (error) {
-            console.error('Enrollment Error:', error);
-            alert('Something went wrong. Please check your connection.');
-        }
-    }
-</script>
 
 </body>
 </html>

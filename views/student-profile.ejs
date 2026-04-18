@@ -60,6 +60,11 @@
             margin-bottom: 5px;
         }
 
+        .nav-menu a:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+
         .nav-menu a.active {
             background: rgba(139, 92, 246, 0.1);
             color: var(--accent-purple);
@@ -175,8 +180,6 @@
             margin: 0;
         }
 
-        .gpa-val { color: #10b981; }
-
         .btn-signout {
             display: block;
             width: 100%;
@@ -188,6 +191,11 @@
             border-radius: 12px;
             margin-top: 15px;
             font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-signout:hover {
+            background: rgba(239, 68, 68, 0.2);
         }
     </style>
 </head>
@@ -196,18 +204,16 @@
 <div class="sidebar">
     <div class="top-section">
         <div class="sidebar-brand"><h2>StudentHub</h2></div>
-<nav class="nav-menu">
-    <a href="/student-dashboard">🏠 Dashboard</a>
-    
-    <a href="/courses">📚 Courses</a>
-    
-    <a href="/student-profile" class="active">👤 Profile</a>
-</nav>
+        <nav class="nav-menu">
+            <a href="/student-dashboard">🏠 Dashboard</a>
+            <a href="/courses">📚 Courses</a>
+            <a href="/student-profile" class="active">👤 Profile</a>
+        </nav>
     </div>
 
     <div class="sidebar-footer">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 0 10px;">
-            <div style="width: 35px; height: 35px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+            <div style="width: 35px; height: 35px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
                 <%= user.charAt(0).toUpperCase() %>
             </div>
             <div>
@@ -221,7 +227,7 @@
 
 <div class="main-content">
     <div class="header">
-        <h1 style="margin:0;">Student <span>Profile</span></h1>
+        <h1 style="margin:0;">Student <span style="color: var(--accent-purple);">Profile</span></h1>
         <p style="color: var(--text-muted);">View and manage your personal information.</p>
     </div>
 
@@ -232,8 +238,8 @@
                 <%= user.charAt(0).toUpperCase() %>
                 <div class="status-dot"></div>
             </div>
-            <h2 style="margin:0;"><%= studentData.first_name %> <%= studentData.last_name %></h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem;"><%= studentData.year_level %> Year</p>
+            <h2 style="margin:0; color: white;"><%= studentData.first_name %> <%= studentData.last_name %></h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;"><%= studentData.year_level %> Year Student</p>
             <div class="badge-row">
                 <span class="badge deans">DEAN'S LIST</span>
                 <span class="badge active">ACTIVE</span>
@@ -243,7 +249,7 @@
         <div class="info-card">
             <div class="info-header">
                 <h3 style="margin:0;">📋 Personal Information</h3>
-                <button style="background:none; border: 1px solid #334155; color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer;">Edit</button>
+                
             </div>
 
             <div class="info-grid">
@@ -268,8 +274,8 @@
                     <p>Enrolled</p>
                 </div>
                 <div class="info-item">
-                    <label>REGISTRATION DATE</label>
-                    <p>January 2026</p>
+                    <label>CURRENT SEMESTER</label>
+                    <p>2nd Semester, 2026</p>
                 </div>
             </div>
         </div>
