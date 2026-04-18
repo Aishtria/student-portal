@@ -67,7 +67,6 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
     const { username, password, first_name, last_name, course, year_level, role } = req.body;
     
-    // Postgres uses $1, $2, etc. instead of ?
     const userSql = 'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id';
     
     pool.query(userSql, [username, password, role], (err, result) => {
@@ -268,6 +267,65 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// Final Render Port Setup
+// --- 7. AUTO-TABLE CREATION SCRIPT ---
+const initDb = async () => {
+    const queryText = `
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(20) CHECK (role IN ('admin', 'student', 'teacher')) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS students (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        first_name VARCHAR(50),
+        last_name VARCHAR(50),
+        course VARCHAR(100),
+        year_level INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS announcements (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        image TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS class_schedules (
+        id SERIAL PRIMARY KEY,
+        course VARCHAR(100),
+        year_level INTEGER,
+        subject_code VARCHAR(50),
+        subject_name VARCHAR(100),
+        day_of_week VARCHAR(20),
+        start_time TIME,
+        end_time TIME,
+        room VARCHAR(50)
+    );
+
+    CREATE TABLE IF NOT EXISTS grades (
+        id SERIAL PRIMARY KEY,
+        student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
+        subject_name VARCHAR(100),
+        grade_value DECIMAL(3,2),
+        teacher_id INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    `;
+
+    try {
+        await pool.query(queryText);
+        console.log("✅ Database tables are ready!");
+    } catch (err) {
+        console.error("❌ Error creating tables:", err);
+    }
+};
+
+// Run the initialization
+initDb();
+
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
