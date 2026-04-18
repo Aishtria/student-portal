@@ -110,7 +110,7 @@ app.post('/login', (req, res) => {
             req.session.role = user.role; 
             req.session.displayName = user.first_name || (user.role === 'teacher' ? 'Instructor' : 'Admin');
 
-            // 3. THE REDIRECT LOGIC (This fixes the "same area" problem)
+            // 3. THE REDIRECT LOGIC
             if (user.role === 'admin') {
                 res.redirect('/admin-dashboard');
             } else if (user.role === 'teacher') {
@@ -163,7 +163,6 @@ app.post('/post-announcement', upload.array('event_images', 5), (req, res) => {
 app.post('/post-schedule', (req, res) => {
     if (req.session.loggedin && req.session.role === 'admin') {
         const { course, year_level, subject_name, day_of_week, start_time, end_time, room } = req.body;
-        // FIXED: Added subject_code (placeholder "N/A") to match table schema
         const sql = 'INSERT INTO class_schedules (course, year_level, subject_code, subject_name, day_of_week, start_time, end_time, room) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
         pool.query(sql, [course, year_level, "N/A", subject_name, day_of_week, start_time, end_time, room], (err) => {
             if (err) console.error(err);
@@ -246,8 +245,8 @@ app.get('/logout', (req, res) => {
 app.get('/setup-admin', async (req, res) => {
     try {
         await pool.query("DELETE FROM users WHERE username = $1", ['admin']);
-        await pool.query("INSERT INTO users (username, password, role) VALUES ($1, $2, $3)", ['admin', 'chcci2026', 'admin']);
-        res.send("✅ SUCCESS! Admin account RESET. <br>User: admin <br>Pass: chcci2026 <br><a href='/'>Login</a>");
+        await pool.query("INSERT INTO users (username, password, role) VALUES ($1, $2, $3)", ['admin', 'admin123', 'admin']);
+        res.send("✅ SUCCESS! Admin account RESET. <br>User: admin <br>Pass: admin123 <br><a href='/'>Login</a>");
     } catch (err) {
         res.send("❌ Error: " + err.message);
     }
