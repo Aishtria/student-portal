@@ -29,11 +29,11 @@ app.use(session({
     cookie: { maxAge: 60000 * 30 }
 }));
 
-// --- 2. Database Connection (Postgres for Render) ---
+// --- 2. Database Connection ---
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
-        rejectUnauthorized: false // Required for Render Postgres
+        rejectUnauthorized: false 
     }
 });
 
@@ -57,7 +57,6 @@ app.get('/register', (req, res) => {
 
 app.post('/register', (req, res) => {
     const { username, password, first_name, last_name, course, year_level, role } = req.body;
-    
     const userSql = 'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id';
     
     pool.query(userSql, [username, password, role], (err, result) => {
@@ -134,9 +133,9 @@ app.get('/admin-dashboard', (req, res) => {
                 pool.query(sqlSchedules, (err3, sch) => {
                     res.render('admin-dashboard', { 
                         user: req.session.displayName,
-                        announcements: ann.rows || [],
-                        students: std.rows || [],
-                        schedules: sch.rows || [] 
+                        announcements: ann ? ann.rows : [],
+                        students: std ? std.rows : [],
+                        schedules: sch ? sch.rows : [] 
                     });
                 });
             });
@@ -158,8 +157,10 @@ app.post('/post-announcement', upload.array('event_images', 5), (req, res) => {
 app.post('/post-schedule', (req, res) => {
     if (req.session.loggedin && req.session.role === 'admin') {
         const { course, year_level, subject_name, day_of_week, start_time, end_time, room } = req.body;
-        const sql = 'INSERT INTO class_schedules (course, year_level, subject_name, day_of_week, start_time, end_time, room) VALUES ($1, $2, $3, $4, $5, $6, $7)';
-        pool.query(sql, [course, year_level, subject_name, day_of_week, start_time, end_time, room], () => {
+        // FIXED: Added subject_code (placeholder "N/A") to match table schema
+        const sql = 'INSERT INTO class_schedules (course, year_level, subject_code, subject_name, day_of_week, start_time, end_time, room) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
+        pool.query(sql, [course, year_level, "N/A", subject_name, day_of_week, start_time, end_time, room], (err) => {
+            if (err) console.error(err);
             res.send('<script>alert("Schedule Posted!"); window.location.href="/admin-dashboard";</script>');
         });
     }
@@ -180,8 +181,8 @@ app.get('/teacher-dashboard', (req, res) => {
             pool.query(recentGradesSql, (err2, recentGrades) => {
                 res.render('teacher-dashboard', {
                     user: req.session.displayName,
-                    students: students.rows || [],
-                    recentGrades: recentGrades.rows || []
+                    students: students ? students.rows : [],
+                    recentGrades: recentGrades ? recentGrades.rows : []
                 });
             });
         });
@@ -219,39 +220,12 @@ app.get('/student-dashboard', (req, res) => {
                         res.render('student-dashboard', {
                             user: req.session.displayName,
                             student: student,
-                            schedules: sch.rows || [],
-                            grades: grd.rows || [],
-                            announcements: ann.rows || []
+                            schedules: sch ? sch.rows : [],
+                            grades: grd ? grd.rows : [],
+                            announcements: ann ? ann.rows : []
                         });
                     });
                 });
-            });
-        });
-    } else { res.redirect('/'); }
-});
-
-app.get('/student-profile', (req, res) => {
-    if (req.session.loggedin && req.session.role === 'student') {
-        const sql = 'SELECT * FROM students WHERE user_id = $1';
-        pool.query(sql, [req.session.userId], (err, result) => {
-            if (err || result.rows.length === 0) return res.send("Error loading profile.");
-            res.render('student-profile', { 
-                user: req.session.displayName,
-                studentData: result.rows[0], 
-                username: req.session.username 
-            });
-        });
-    } else { res.redirect('/'); }
-});
-
-app.get('/courses', (req, res) => {
-    if (req.session.loggedin && req.session.role === 'student') {
-        const sql = 'SELECT * FROM class_schedules ORDER BY course ASC, subject_name ASC';
-        pool.query(sql, (err, results) => {
-            if (err) return res.send("Error fetching courses.");
-            res.render('courses', { 
-                user: req.session.displayName,
-                courses: results.rows || []
             });
         });
     } else { res.redirect('/'); }
@@ -262,22 +236,18 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// --- 7. UTILITY: SUPER RESET ADMIN SETUP (RUN ONCE THEN DELETE) ---
+// --- 7. UTILITY: SUPER RESET ADMIN SETUP ---
 app.get('/setup-admin', async (req, res) => {
     try {
-        // Clear any old admin account first to ensure the new password takes effect
         await pool.query("DELETE FROM users WHERE username = $1", ['admin']);
-        
-        // Insert fresh admin account
         await pool.query("INSERT INTO users (username, password, role) VALUES ($1, $2, $3)", ['admin', 'chcci2026', 'admin']);
-        
-        res.send("✅ SUCCESS! Admin account has been RESET. <br>Username: admin <br>Password: chcci2026 <br><br><a href='/'>Go to Login</a>");
+        res.send("✅ SUCCESS! Admin account RESET. <br>User: admin <br>Pass: chcci2026 <br><a href='/'>Login</a>");
     } catch (err) {
         res.send("❌ Error: " + err.message);
     }
 });
 
-// --- 8. AUTO-TABLE CREATION SCRIPT ---
+// --- 8. AUTO-TABLE CREATION ---
 const initDb = async () => {
     const queryText = `
     CREATE TABLE IF NOT EXISTS users (
@@ -286,7 +256,6 @@ const initDb = async () => {
         password VARCHAR(255) NOT NULL,
         role VARCHAR(20) CHECK (role IN ('admin', 'student', 'teacher')) NOT NULL
     );
-
     CREATE TABLE IF NOT EXISTS students (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -295,7 +264,6 @@ const initDb = async () => {
         course VARCHAR(100),
         year_level INTEGER
     );
-
     CREATE TABLE IF NOT EXISTS announcements (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
@@ -303,7 +271,6 @@ const initDb = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         image TEXT
     );
-
     CREATE TABLE IF NOT EXISTS class_schedules (
         id SERIAL PRIMARY KEY,
         course VARCHAR(100),
@@ -315,7 +282,6 @@ const initDb = async () => {
         end_time TIME,
         room VARCHAR(50)
     );
-
     CREATE TABLE IF NOT EXISTS grades (
         id SERIAL PRIMARY KEY,
         student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
@@ -323,9 +289,7 @@ const initDb = async () => {
         grade_value DECIMAL(3,2),
         teacher_id INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    `;
-
+    );`;
     try {
         await pool.query(queryText);
         console.log("✅ Database tables are ready!");
