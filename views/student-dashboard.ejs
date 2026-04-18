@@ -317,9 +317,9 @@
                     <% if (post.image) { 
                         let images = [];
                         try { 
-                            // This ensures we strip brackets [] and quotes "" that Postgres might store
-                            let cleanStr = post.image.replace(/[\[\]"]/g, '');
-                            images = cleanStr.split(',').map(item => item.trim()).filter(item => item !== "");
+                            // Stronger regex to clean brackets, quotes, and whitespace
+                            let cleanStr = post.image.replace(/[\[\]"\s]/g, '');
+                            images = cleanStr.split(',').filter(item => item !== "");
                         } catch (e) { 
                             images = [post.image]; 
                         } 

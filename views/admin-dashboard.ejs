@@ -348,7 +348,9 @@
                                                 imgUrl = Array.isArray(imgs) ? imgs[0] : imgs;
                                             } catch(e) {}
                                         %>
-                                            <img src="/uploads/<%= imgUrl %>" class="thumbnail" onerror="this.src='https://via.placeholder.com/45'">
+                                            <img src="/uploads/<%= imgUrl %>" 
+                                            class="thumbnail" 
+                                             onerror="this.style.display='none'">
                                         <% } %>
                                     </td>
                                     <td><strong><%= post.title %></strong></td>
